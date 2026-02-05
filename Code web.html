@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> - SỔ TAY MTTQVN - PHƯỜNG HỒNG NGỰ </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f0f4f0; 
+            color: #1a2e1a; 
+        }
+        
+        h1, h2, h3, .serif-font {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Custom Scrollbar Emerald Style */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ecf3ec; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #059669; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #047857; 
+        }
+
+        .book-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -5px rgba(5, 150, 105, 0.2);
+        }
+
+        .func-card {
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .func-card:hover {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+
+        /* Login Overlay */
+        #loginOverlay {
+            transition: opacity 0.5s ease-in-out;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)), url('https://www.transparenttextures.com/patterns/leaf.png');
+        }
+        
+        .toolbar-btn.active {
+            background-color: #064e3b;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Dropdown Styles */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            min-width: 280px;
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.1);
+            z-index: 100;
+            border-radius: 0.75rem;
+            border: 1px solid #d1fae5;
+            overflow: hidden;
+        }
+        .dropdown:hover > .dropdown-content {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-content a, .dropdown-content button {
+            color: #374151;
+            padding: 12px 20px;
+            display: block;
+            width: 100%;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .dropdown-content a:hover {
+            background-color: #ecfdf5;
+            color: #059669;
+            padding-left: 25px;
+        }
+
+        .border-badge {
+            background: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+        }
+
+        .ibg-logo {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #fff 0%, #d1fae5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- LOGIN OVERLAY SECTION -->
+    <div id="loginOverlay" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center p-4 bg-emerald-900/40 backdrop-blur-md">
+    <div class="bg-white p-8 md:p-12 rounded-[2rem] shadow-2xl max-w-lg w-full text-center border border-emerald-100 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-red-500 to-emerald-600"></div>
+        
+        <div class="mb-8 flex justify-center relative">
+    <div class="p-2 bg-white rounded-full shadow-sm border border-emerald-50">
+        <img src="https://haitrieu.com/wp-content/uploads/2022/01/Logo-Mat-Tran-To-Quoc-Viet-Nam.png" 
+             alt="MTTQ Việt Nam" 
+             style="width: 80px; height: 80px; object-fit: contain; display: block; margin: 0 auto; min-width: 80px; min-height: 80px;">
+    </div>
+</div>
+
+        <h2 class="text-xl font-bold text-emerald-900 mb-2 uppercase tracking-tight">SỔ TAY: MTTQVN PHƯỜNG HỒNG NGỰ</h2>
+        <p class="text-[11px] font-bold text-emerald-700 mb-8 uppercase tracking-wider leading-relaxed opacity-80">
+            Mặt trận Tổ quốc và các Tổ chức Chính trị - Xã hội<br>Phường Hồng Ngự, tỉnh Đồng Tháp
+        </p>
+        
+        <div class="relative mb-6 text-left">
+            <input type="password" id="passwordInput" placeholder="Nhập mật khẩu truy cập..." 
+                class="w-full px-6 py-4 rounded-2xl border-2 border-emerald-50 bg-emerald-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-600 transition-all text-lg text-center font-bold tracking-[0.2em]"
+                onkeypress="if(event.key === 'Enter') attemptLogin()">
+            <span class="absolute right-5 top-5 text-emerald-400">🛡️</span>
+        </div>
+
+        <button onclick="attemptLogin()" 
+            class="w-full bg-emerald-800 hover:bg-emerald-700 active:scale-95 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-emerald-900/30 uppercase tracking-widest">
+            XÁC THỰC TRUY CẬP
+        </button>
+
+        <div id="loginError" class="mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-xs font-bold hidden">
+            ⚠️ Mật khẩu không chính xác. Vui lòng kiểm tra lại.
+        </div>
+    </div>
+</div>
+
+    <!-- Header -->
+    <header class="border-badge text-white shadow-xl z-10 shrink-0">
+    <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center space-x-4 w-full md:w-auto">
+            <div class="bg-white/20 p-2 rounded-xl backdrop-blur-md flex flex-col items-center">
+                <img src="https://haitrieu.com/wp-content/uploads/2022/01/Logo-Mat-Tran-To-Quoc-Viet-Nam.png" 
+                     alt="Logo MTTQ Việt Nam" 
+                     class="h-10 w-10 object-contain">
+            </div>
+            <div>
+                    <h1 class="text-lg font-extrabold tracking-tight uppercase flex items-center gap-2">
+                        SỔ TAY MTTQVN - PHƯỜNG HỒNG NGỰ
+                    </h1>
+                    <p class="text-[10px] text-emerald-100 font-bold tracking-widest uppercase leading-tight">
+                        MTTQ & CÁC TỔ CHỨC CHÍNH TRỊ - XÃ HỘI - PHƯỜNG HỒNG NGỰ, TỈNH ĐỒNG THÁP
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 w-full md:w-auto flex-1 justify-end">
+                <div class="relative w-full md:max-w-md">
+                    <input type="text" id="searchInput" placeholder="Tìm văn bản, nghị quyết, kỹ năng..." 
+                        class="w-full pl-5 pr-12 py-2.5 rounded-2xl text-gray-800 focus:outline-none focus:ring-4 focus:ring-white/20 bg-white/10 border border-white/20 placeholder-emerald-100 text-sm backdrop-blur-sm shadow-inner">
+                    <span class="absolute right-4 top-2.5 text-white/50">🔍</span>
+                </div>
+                
+                <button onclick="logout()" class="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl border border-white/10 transition-all" title="Đăng xuất">
+                    <span>🚪</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-emerald-800 text-white sticky top-0 z-50 shadow-lg">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center gap-1 py-1"> 
+            
+            <button onclick="handleToolbarClick('home')" class="toolbar-btn active flex items-center gap-2 px-4 py-3 rounded-xl transition-all whitespace-nowrap text-sm font-bold">
+                🏠 TRANG CHỦ
+            </button>
+            
+            <div class="relative group">
+                <button class="toolbar-btn flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-sm font-bold">
+                    📜 CHỦ TRƯƠNG - PHÁP LUẬT <span class="text-[10px] opacity-70">▼</span>
+                </button>
+                <div class="dropdown-content absolute left-0 mt-0 w-80 bg-white rounded-b-xl shadow-2xl py-2 z-[60] border border-emerald-100 hidden group-hover:block animate-fade-in">
+                    <a href="#" onclick="setActiveCategory('Chủ trương của Đảng')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
+                        📁 Nghị quyết, Chỉ thị của Đảng
+                    </a>
+                    <a href="#" onclick="setActiveCategory('Pháp luật Nhà nước')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
+                        📁 Luật Biên giới quốc gia
+                    </a>
+                    <a href="#" onclick="setActiveCategory('An ninh biên giới')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
+                        📁 Quy định về ANTT vùng biên
+                    </a>
+                </div>
+            </div>
+
+            <div class="relative group">
+                <button class="toolbar-btn flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-sm font-bold">
+                    📍 VĂN BẢN ĐỊA PHƯƠNG <span class="text-[10px] opacity-70">▼</span>
+                </button>
+                <div class="dropdown-content absolute left-0 mt-0 w-80 bg-white rounded-b-xl shadow-2xl py-2 z-[60] border border-emerald-100 hidden group-hover:block animate-fade-in">
+                    <a href="#" onclick="setActiveCategory('Văn bản địa phương')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
+                        📁 Văn bản MTTQ Đồng Tháp
+                    </a>
+                    <a href="#" onclick="setActiveCategory('Văn bản địa phương')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
+                        📁 Kế hoạch Phường Hồng Ngự
+                    </a>
+                </div>
+            </div>
+
+            <button onclick="handleToolbarClick('chatbot')" class="toolbar-btn flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-sm font-bold">
+                🤖 TRỢ LÝ Chatbot
+            </button>
+
+            <button onclick="handleToolbarClick('quiz')" class="toolbar-btn flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-sm font-bold">
+                🎮 HỎI ĐÁP TRẮC NGHIỆM
+            </button>
+            <button onclick="handleToolbarClick('contact')" class="toolbar-btn flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-sm font-bold">
+                📞 THÔNG TIN LIÊN HỆ
+            </button>
+
+        </div>
+    </div>
+</nav>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebarPanel" class="hidden md:flex flex-col w-72 bg-white border-r border-emerald-50 shadow-sm overflow-y-auto shrink-0">
+            <div class="p-6">
+                <h3 class="font-bold text-emerald-900 uppercase text-[10px] tracking-widest mb-4 opacity-50">Cẩm nang tác nghiệp</h3>
+                <nav id="categoryNav" class="space-y-1">
+                    <!-- Nav items injected by JS -->
+                </nav>
+            </div>
+            
+            <div class="mt-auto p-6 bg-emerald-50/50 m-4 rounded-3xl border border-emerald-100">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="p-2 bg-emerald-600 text-white rounded-lg animate-pulse">📡</div>
+                    <div class="text-[11px] font-black text-emerald-900 uppercase tracking-tighter">TRỰC BAN SỐ MTTQVN</div>
+                </div>
+                <div class="text-lg font-black text-emerald-900 mb-1">1900.XXXX</div>
+                <p class="text-[10px] text-emerald-600 font-medium">Hỗ trợ thông tin 24/7 tại Phường</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-y-auto bg-[#f8faf8] relative scroll-smooth w-full" id="mainContent">
+            
+            <!-- Mobile Filter -->
+            <div id="mobileFilterPanel" class="md:hidden p-4 bg-white border-b border-emerald-50 sticky top-0 z-20 shrink-0 shadow-sm">
+                <select id="mobileCatSelect" class="block w-full px-4 py-3 text-sm border-emerald-100 focus:ring-emerald-500 focus:border-emerald-500 rounded-xl border bg-emerald-50/30 font-medium">
+                    <option value="all">Tất cả mục lục</option>
+                </select>
+            </div>
+
+            <!-- Content Container -->
+            <div id="dynamicContent" class="flex-1 flex flex-col">
+                <div id="homeView" class="flex flex-col flex-1">
+                    
+                    <!-- Dashboard Section -->
+                    <div id="dashboardSection" class="p-6 md:p-12 bg-white border-b border-emerald-50">
+                        <div class="max-w-6xl mx-auto">
+                            <div class="flex flex-col md:flex-row items-center gap-10 mb-12">
+                                <div class="flex-1 text-center md:text-left">
+                                    <div class="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-100 mb-4 uppercase tracking-widest">Đất Sen Hồng - Phường Hồng Ngự</div>
+                                    <h2 class="text-3xl font-black text-emerald-900 mb-4 leading-tight">Chào mừng bạn đến với <br><span class="text-emerald-600">Sổ tay Mặt trận Tổ quốc Việt Nam - phường Hồng Ngự !</span></h2>
+                                    <p class="text-gray-500 leading-relaxed text-sm">Cung cấp kiến thức, pháp luật và thông tin hỗ trợ từ Mặt trận Tổ quốc Phường Hồng Ngự dành cho nhân dân khu vực biên giới.</p>
+                                </div>
+                                <div class="w-full md:w-64 h-56 bg-emerald-50 rounded-3xl border-2 border-dashed border-emerald-200 flex items-center justify-center relative overflow-hidden group shadow-inner">
+                                    <div class="text-center z-10 transition-transform group-hover:scale-110">
+                                        <div class="text-5xl mb-3">🌸</div>
+                                        <div class="text-[10px] font-black text-emerald-800 uppercase tracking-tighter">Phường Hồng Ngự</div>
+                                        <div class="text-xs font-black text-emerald-600">Sổ tay MTTQVN</div>
+                                    </div>
+                                    <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-emerald-100/50 rounded-full"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <div class="func-card p-5 rounded-2xl bg-white shadow-sm cursor-pointer" onclick="setActiveCategory('Chủ trương của Đảng')">
+                                    <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl mb-4">📕</div>
+                                    <h4 class="font-bold text-emerald-900 text-[11px] mb-1 uppercase">Đường lối Đảng</h4>
+                                    <p class="text-[10px] text-gray-400">Nghị quyết mới vùng biên.</p>
+                                </div>
+                                
+                                <div class="func-card p-5 rounded-2xl bg-white shadow-sm cursor-pointer" onclick="setActiveCategory('Pháp luật Nhà nước')">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl mb-4">⚖️</div>
+                                    <h4 class="font-bold text-emerald-900 text-[11px] mb-1 uppercase">Luật Biên giới</h4>
+                                    <p class="text-[10px] text-gray-400">Quy định cư trú & Biên phòng.</p>
+                                </div>
+
+                                <div class="func-card p-5 rounded-2xl bg-white shadow-sm cursor-pointer" onclick="setActiveCategory('Văn bản địa phương')">
+                                    <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl mb-4">📍</div>
+                                    <h4 class="font-bold text-emerald-900 text-[11px] mb-1 uppercase">Tỉnh - Phường</h4>
+                                    <p class="text-[10px] text-gray-400">Văn bản chỉ đạo địa phương.</p>
+                                </div>
+
+                                <div class="func-card p-5 rounded-2xl bg-white shadow-sm cursor-pointer" onclick="setActiveCategory('Phát triển kinh tế')">
+                                    <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl mb-4">🌾</div>
+                                    <h4 class="font-bold text-emerald-900 text-[11px] mb-1 uppercase">Kinh tế</h4>
+                                    <p class="text-[10px] text-gray-400">Văn bản chỉ đạo về phát triển kinh tế.</p>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-8 md:p-12 flex-1">
+                        <div class="max-w-6xl mx-auto w-full">
+                            <div class="flex justify-between items-end mb-8">
+                                <div>
+                                    <h2 id="currentCategoryTitle" class="text-2xl font-bold text-emerald-900 uppercase tracking-tighter">Danh mục Sổ tay </h2>
+                                    <div class="h-1.5 w-16 bg-emerald-500 mt-2 rounded-full"></div>
+                                </div>
+                                <p id="resultCount" class="text-[10px] font-black text-emerald-600/50 uppercase tracking-[0.2em]">0 nội dung tìm thấy</p>
+                            </div>
+
+                            <div id="bookGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                <!-- Cards dynamically injected -->
+                            </div>
+                            
+                            <div id="noResults" class="hidden text-center py-24 bg-white rounded-[3rem] border border-emerald-50 shadow-inner">
+                                <div class="text-6xl mb-6">🏜️</div>
+                                <h3 class="text-xl font-black text-emerald-900 uppercase">Dữ liệu Sổ tay MTTQVN đang cập nhật</h3>
+                                <p class="text-gray-400 mt-2 text-sm font-medium">Vui lòng thử lại với danh mục khác.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="quizView" class="hidden flex-1 p-6 bg-emerald-50/30 overflow-y-auto">
+    <div class="max-w-4xl mx-auto">
+        <div id="quizLibrary">
+            <div class="mb-8 text-center">
+                <h2 class="text-2xl font-black text-emerald-900 uppercase">Thư viện bài thi trắc nghiệm</h2>
+                <p class="text-gray-500 text-sm">Chọn một chuyên đề bên dưới để bắt đầu kiểm tra kiến thức</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div onclick="loadQuiz('NGHI_QUYET_33')" class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100 hover:shadow-md transition-all cursor-pointer group">
+                    <div class="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">📄</div>
+                    <h4 class="font-bold text-emerald-900 mb-1">Nghị quyết số 33-NQ/TW</h4>
+                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-4">10 Câu hỏi • Google Sheets Data</p>
+                    <span class="text-xs font-bold text-emerald-600">BẮT ĐẦU THI ➜</span>
+                </div>
+                </div>
+        </div>
+
+        <div id="quizArena" class="hidden bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-emerald-100">
+            <div class="p-6 bg-emerald-900 text-white flex justify-between items-center">
+                <div id="currentQuizTitle" class="font-bold uppercase text-sm">Đang thi...</div>
+                <div class="bg-white/20 px-4 py-1 rounded-full text-xs font-mono" id="quizTimer">10:00</div>
+            </div>
+            <div id="questionBox" class="p-8">
+                </div>
+        </div>
+    </div>
+</div>
+
+        
+            
+                <!-- Placeholder View -->
+                <div id="placeholderView" class="hidden p-20 flex-1 flex flex-col items-center justify-center text-center bg-white">
+                    <div class="text-8xl mb-8 opacity-20">📡</div>
+                    <h2 class="text-3xl font-black text-emerald-900 mb-4 uppercase tracking-tighter">Hệ thống Sổ tay MTTQVN đang đồng bộ</h2>
+                    <p class="text-gray-400 max-w-md mx-auto font-medium">Hệ thống đang đồng bộ dữ liệu với Cổng thông tin Mặt trận Tổ quốc Phường Hồng Ngự. Vui lòng quay lại sau.</p>
+                    <button onclick="handleToolbarClick('home')" class="mt-10 px-10 py-4 bg-emerald-900 text-white rounded-2xl font-black shadow-xl hover:scale-105 transition-transform uppercase tracking-widest text-xs">Quay lại Trang chủ</button>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <footer class="bg-white border-t border-emerald-50 py-16 px-4 text-center shrink-0">
+                <div class="container mx-auto">
+                    <p class="font-black text-emerald-900 text-2xl mb-1 tracking-tighter uppercase">Sổ tay MTTQVN - CÔNG DÂN BIÊN GIỚI SỐ</p>
+                    <p class="text-emerald-600/60 text-[10px] font-bold uppercase tracking-[0.4em] mb-10">Phường Hồng Ngự, tỉnh Đồng Tháp</p>
+                    
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-12">
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase mb-2">Thông tin liên hệ Sổ tay MTTQVN</span>
+                            <div class="flex gap-3">
+                                <div class="bg-emerald-50 px-5 py-2.5 rounded-2xl border border-emerald-100 text-[11px] font-bold text-emerald-900">📞 0337.848.108</div>
+                                <div class="bg-emerald-50 px-5 py-2.5 rounded-2xl border border-emerald-100 text-[11px] font-bold text-emerald-900">📧 mttq.hongngu@dongthap.vn</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visitor Counter -->
+                    <div class="flex flex-col items-center">
+                        <div class="flex items-center gap-4 bg-emerald-950 text-white px-8 py-3 rounded-full shadow-2xl border border-emerald-800">
+                            <div class="flex items-center gap-2">
+                                <span class="relative flex h-2.5 w-2.5">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                                </span>
+                                <span class="text-[9px] font-black uppercase tracking-widest text-emerald-300">Tổng lượt truy cập Sổ tay MTTQVN:</span>
+                            </div>
+                            <span id="visitorCount" class="font-mono font-bold text-xl tabular-nums">0</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- JavaScript Section -->
+    <script>
+    const APP_PASSWORD = "123456"; 
+    const STORAGE_KEY = 'biengioiso_v2_counter';
+    const BASE_COUNT = 5280; 
+
+    let libraryData = [ ];
+        
+   
+
+    const state = {
+        currentCategory: "all",
+        searchQuery: "",
+        categories: [],
+        books: libraryData,
+        currentView: "home",
+        expandedMenus: {}
+    };
+
+    function initVisitorCount() {
+        let count = localStorage.getItem(STORAGE_KEY);
+        if (!count) {
+            count = BASE_COUNT;
+            localStorage.setItem(STORAGE_KEY, count);
+        }
+        updateDisplay(count);
+    }
+
+    function incrementVisitorCount() {
+        let count = parseInt(localStorage.getItem(STORAGE_KEY)) || BASE_COUNT;
+        count++;
+        localStorage.setItem(STORAGE_KEY, count);
+        updateDisplay(count);
+    }
+
+    function updateDisplay(num) {
+        const el = document.getElementById('visitorCount');
+        if (el) el.innerText = parseInt(num).toLocaleString('vi-VN');
+    }
+
+    // Dòng 425
+document.addEventListener('DOMContentLoaded', () => {
+    initVisitorCount();
+    setupEventListeners();
+    
+    // Gọi hàm tải dữ liệu từ Google Sheet
+    loadDataFromSheet(); 
+
+    // Kiểm tra trạng thái đăng nhập
+    if (sessionStorage.getItem('biengioiso_auth') === 'true') {
+        const overlay = document.getElementById('loginOverlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+}); // Kết thúc DOMContentLoaded tại đây
+
+    window.attemptLogin = function() {
+        const passInput = document.getElementById('passwordInput');
+        const errorMsg = document.getElementById('loginError');
+        const overlay = document.getElementById('loginOverlay');
+
+        if (passInput.value === APP_PASSWORD) {
+            sessionStorage.setItem('biengioiso_auth', 'true');
+            incrementVisitorCount();
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => { overlay.style.display = 'none'; }, 500);
+        } else {
+            errorMsg.classList.remove('hidden');
+            passInput.classList.add('border-red-500');
+            setTimeout(() => passInput.classList.remove('border-red-500'), 1000);
+        }
+    };
+
+    window.logout = function() {
+        sessionStorage.removeItem('biengioiso_auth');
+        location.reload();
+    };
+
+    window.handleLoginKey = function(e) { if (e.key === 'Enter') window.attemptLogin(); };
+
+    function extractCategories() {
+        const cats = new Set(libraryData.map(b => b.category));
+        state.categories = Array.from(cats);
+    }
+
+   // HÀM ĐIỀU HƯỚNG MỚI (ĐÃ GỘP TRẮC NGHIỆM)
+    window.handleToolbarClick = function(view) {
+    state.currentView = view;
+    
+    // Reset trạng thái các nút bấm trên Menu
+    document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
+
+    // XỬ LÝ CHATBOT
+    if (view === 'chatbot') {
+        const linkChatbot = "https://chatgpt.com/g/g-68ada4c182dc81918f133b37ed0226fb-mttqvn-va-cac-tcctxh-phuong-hong-ngu-ai";
+        window.open(linkChatbot, "_blank");
+        handleToolbarClick('home'); 
+        return; 
+    }
+
+    const homeView = document.getElementById('homeView');
+    const quizView = document.getElementById('quizView');
+    const sidebar = document.getElementById('sidebarPanel');
+    const mobileFilter = document.getElementById('mobileFilterPanel');
+
+    if (view === 'quiz') {
+        // HIỆN KHU VỰC THI
+        if (homeView) homeView.classList.add('hidden');
+        if (quizView) quizView.classList.remove('hidden');
+        if (sidebar) sidebar.classList.add('hidden');
+        if (mobileFilter) mobileFilter.classList.add('hidden');
+        showQuizLibrary();
+    } else {
+        // QUAY VỀ TRANG CHỦ / CONTACT
+        if (quizView) quizView.classList.add('hidden');
+        if (homeView) homeView.classList.remove('hidden');
+        if (sidebar) sidebar.classList.remove('hidden');
+        if (mobileFilter) mobileFilter.classList.remove('hidden');
+
+        if (view === 'home') {
+            setActiveCategory('all');
+        } else if (view === 'contact') {
+            setActiveCategory('Thông tin liên hệ');
+        }
+        
+        // CỰC KỲ QUAN TRỌNG: Vẽ lại tài liệu nếu lỡ bị mất
+        if (libraryData.length > 0) {
+            extractCategories();
+            renderNavigation();
+            renderBooks();
+        }
+    }
+};
+
+    window.renderNavigation = function() {
+        const nav = document.getElementById('categoryNav');
+        const mobileSelect = document.getElementById('mobileCatSelect');
+        if(!nav || !mobileSelect) return;
+
+        nav.innerHTML = '';
+        mobileSelect.innerHTML = '<option value="all">Tất cả mục lục Sổ tay MTTQVN</option>';
+
+        const allBtn = createNavButton("Tất cả tài liệu", "all", state.currentCategory === "all", "📂");
+        nav.appendChild(allBtn);
+
+        state.categories.forEach(cat => {
+            nav.appendChild(createNavButton(cat, cat, state.currentCategory === cat));
+            const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat;
+            mobileSelect.appendChild(opt);
+        });
+    };
+
+    function createNavButton(label, value, isActive, icon = "📄") {
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left px-5 py-4 rounded-2xl text-[12px] font-bold transition-all mb-1.5 flex items-center gap-3 ${isActive ? 'bg-emerald-900 text-white shadow-xl translate-x-1' : 'text-emerald-800 hover:bg-emerald-50'}`;
+        btn.innerHTML = `<span>${icon}</span> <span>${label}</span>`;
+        btn.onclick = () => { setActiveCategory(value); };
+        return btn;
+    }
+
+    window.setActiveCategory = function(cat) {
+        state.currentCategory = cat;
+        if(document.getElementById('mobileCatSelect')) document.getElementById('mobileCatSelect').value = cat;
+        document.getElementById('currentCategoryTitle').textContent = cat === "all" ? "Tất cả tài liệu Sổ tay MTTQVN" : cat;
+        
+        const dash = document.getElementById('dashboardSection');
+        if(dash) {
+            if(cat === 'all' && state.searchQuery === '') dash.classList.remove('hidden');
+            else dash.classList.add('hidden');
+        }
+        filterBooks();
+        renderNavigation();
+    };
+
+    window.filterBooks = function() {
+        let filtered = libraryData;
+        if (state.currentCategory !== "all") filtered = filtered.filter(b => b.category === state.currentCategory);
+        if (state.searchQuery) {
+            const q = state.searchQuery.toLowerCase();
+            filtered = filtered.filter(b => b.title.toLowerCase().includes(q));
+        }
+        state.books = filtered;
+        renderBooks();
+    };
+
+    function renderBooks() {
+        const container = document.getElementById('bookGrid');
+        const noResults = document.getElementById('noResults');
+        const countLabel = document.getElementById('resultCount');
+        
+        container.innerHTML = '';
+        countLabel.textContent = `${state.books.length} NỘI DUNG Sổ tay MTTQVN TÌM THẤY`;
+        
+        if (state.books.length === 0) {
+            container.classList.add('hidden'); noResults.classList.remove('hidden'); return;
+        }
+        container.classList.remove('hidden'); noResults.classList.add('hidden');
+        state.books.forEach(book => container.appendChild(createCard(book)));
+    }
+
+    function createCard(book) {
+        const card = document.createElement('div');
+        card.className = 'book-card bg-white p-8 rounded-[2rem] border border-emerald-50 shadow-sm flex flex-col justify-between h-full';
+        
+        let icon = "📄";
+        if (book.category.includes("Đảng")) icon = "📕";
+        if (book.category.includes("Nhà nước")) icon = "⚖️";
+        if (book.category.includes("An ninh")) icon = "🛡️";
+        if (book.category.includes("Phát triển")) icon = "🌾";
+        if (book.category.includes("liên hệ")) icon = "📞"; 
+        
+        card.innerHTML = `
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">${book.category}</span>
+                    <span class="text-3xl">${icon}</span>
+                </div>
+                <h3 class="font-bold text-emerald-900 text-lg mb-4 leading-tight hover:text-emerald-600 transition-colors">
+                    <a href="${book.link}" target="_blank">${book.title}</a>
+                </h3>
+                <div class="h-1 w-10 bg-emerald-200 mb-6 rounded-full"></div>
+            </div>
+            <a href="${book.link}" target="_blank" class="block w-full text-center py-4 bg-emerald-50 text-emerald-900 rounded-2xl hover:bg-emerald-900 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em]">
+                Sổ tay MTTQVN Access ➜
+            </a>
+        `;
+        return card;
+    }
+
+    function setupEventListeners() {
+        document.getElementById('searchInput')?.addEventListener('input', (e) => {
+            state.searchQuery = e.target.value;
+            filterBooks();
+        });
+        document.getElementById('mobileCatSelect')?.addEventListener('change', (e) => setActiveCategory(e.target.value));
+    }
+    async function loadDataFromSheet() {
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRjqxM_vT3aoIQwgoBTq89zp45dtQcoGX1i2lDDzk510f1vziLUj-XPiYU28lEKyWBc9zdiwYNqw9Y_/pub?gid=0&single=true&output=csv'; 
+        
+        try {
+            const response = await fetch(SHEET_CSV_URL);
+            const csvText = await response.text();
+            const rows = csvText.split('\n').slice(1); 
+            
+            libraryData = rows.map((row, index) => {
+                const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (columns.length >= 4) {
+                    return {
+                        id: columns[0].trim(),
+                        category: columns[1].trim().replace(/^"|"$/g, ''),
+                        title: columns[2].trim().replace(/^"|"$/g, ''),
+                        link: columns[3].trim().replace(/^"|"$/g, '')
+                    };
+                }
+            }).filter(item => item !== undefined);
+
+            // CHỈ CẦN CỤM NÀY LÀ ĐỦ:
+            state.books = libraryData;
+            extractCategories(); 
+            renderNavigation();  
+            renderBooks();       
+            
+        } catch (error) {
+            console.error("Lỗi tải dữ liệu:", error);
+        }
+    }
+    // --- BỘ MÁY XỬ LÝ TRẮC NGHIỆM ---
+    const quizConfig = {
+        'LUAT_BIEN_GIOI': {
+            title: "Tìm hiểu Luật Biên giới Quốc gia",
+            // Dán link CSV của Sheet 2 vào đây
+            url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjqxM_vT3aoIQwgoBTq89zp45dtQcoGX1i2lDDzk510f1vziLUj-XPiYU28lEKyWBc9zdiwYNqw9Y_/pub?gid=1021741259&single=true&output=csv"
+        }
+    };
+
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    function showQuizLibrary() {
+        document.getElementById('quizLibrary').classList.remove('hidden');
+        document.getElementById('quizArena').classList.add('hidden');
+    }
+
+    async function loadQuiz(id) {
+        const config = quizConfig[id];
+        if(!config) return;
+
+        document.getElementById('quizLibrary').classList.add('hidden');
+        document.getElementById('quizArena').classList.remove('hidden');
+        document.getElementById('currentQuizTitle').innerText = config.title;
+        
+        const box = document.getElementById('questionBox');
+        box.innerHTML = '<div class="text-center py-10"><p>🔄 Đang tải câu hỏi trắc nghiệm...</p></div>';
+
+        try {
+            const response = await fetch(config.url);
+            const data = await response.text();
+            const rows = data.split('\n').slice(1);
+            
+            // Dùng biến cục bộ quizQuestions thay vì chạm vào biến chung
+            const quizQuestions = rows.filter(row => row.trim() !== '').map(row => {
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+                return {
+                    q: cols[0]?.replace(/"/g, ""),
+                    options: [cols[1], cols[2], cols[3], cols[4]],
+                    correct: parseInt(cols[5]),
+                    explain: cols[6] ? cols[6].replace(/"/g, "") : "Không có giải thích."
+                };
+            });
+            
+            // Gán lại cho biến toàn cầu dùng riêng cho Quiz
+            currentQuestions = quizQuestions;
+            currentIndex = 0; 
+            score = 0;
+            showQuestion();
+        } catch (e) {
+            console.error("Lỗi Quiz:", e);
+            box.innerHTML = '<p class="text-red-500">❌ Lỗi kết nối đề thi. Cậu kiểm tra link Sheet 2 nhé!</p>';
+        }
+    }
+
+    function showQuestion() {
+        const data = currentQuestions[currentIndex];
+        const box = document.getElementById('questionBox');
+        box.innerHTML = `
+            <div class="mb-6 animate-fade-in">
+                <p class="text-[10px] font-black text-emerald-600 uppercase mb-2">Câu hỏi ${currentIndex + 1}/${currentQuestions.length}</p>
+                <h3 class="text-xl font-bold text-emerald-900 leading-tight">${data.q}</h3>
+            </div>
+            <div id="optionsGroup" class="grid gap-3">
+                ${data.options.map((opt, i) => `
+                    <button onclick="handleAnswer(${i+1})" class="opt-btn w-full text-left p-4 rounded-2xl border-2 border-emerald-50 hover:border-emerald-500 transition-all text-sm font-medium">
+                        ${opt}
+                    </button>
+                `).join('')}
+            </div>
+            <div id="explainBox" class="hidden mt-6 p-5 bg-amber-50 rounded-[2rem] border border-amber-100">
+                <p class="text-sm text-amber-900 italic"><strong>💡 Giải thích:</strong> ${data.explain}</p>
+                <button onclick="nextQuestion()" class="mt-4 w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold uppercase text-xs">Câu tiếp theo ➜</button>
+            </div>
+        `;
+    }
+
+    window.handleAnswer = function(choice) {
+        const data = currentQuestions[currentIndex];
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(b => b.disabled = true);
+        
+        if (choice === data.correct) {
+            score++;
+            btns[choice-1].classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
+        } else {
+            btns[choice-1].classList.add('bg-red-500', 'text-white', 'border-red-500');
+            btns[data.correct-1].classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
+        }
+        document.getElementById('explainBox').classList.remove('hidden');
+    }
+
+    window.nextQuestion = function() {
+        currentIndex++;
+        if (currentIndex < currentQuestions.length) showQuestion();
+        else showFinalResult();
+    }
+
+    function showFinalResult() {
+        const box = document.getElementById('questionBox');
+        box.innerHTML = `
+            <div class="text-center py-10">
+                <h2 class="text-3xl font-black text-emerald-900 uppercase">Hoàn thành!</h2>
+                <p class="text-lg mt-2">Đúng: <b>${score}/${currentQuestions.length}</b></p>
+                <button onclick="handleToolbarClick('quiz')" class="mt-8 px-10 py-4 bg-emerald-900 text-white rounded-2xl font-bold uppercase text-xs">Quay lại</button>
+            </div>
+        `;
+    }
+
+    </script>
+
+    <div id="chatBubble" 
+     onclick="handleToolbarClick('chatbot')" 
+     class="fixed bottom-6 right-6 z-50 group cursor-pointer">
+    
+    <div class="absolute bottom-full right-0 mb-4 w-48 bg-white p-3 rounded-2xl shadow-xl border border-emerald-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <p class="text-[11px] text-emerald-800 font-bold text-center">Chào bà con! Con là AI Phường Hồng Ngự đây ạ. 🤖</p>
+        <div class="absolute top-full right-6 w-3 h-3 bg-white border-r border-b border-emerald-100 rotate-45 -mt-[6px]"></div>
+    </div>
+
+    <div class="w-16 h-16 bg-emerald-600 rounded-full shadow-2xl flex items-center justify-center text-3xl hover:scale-110 hover:bg-emerald-700 transition-all duration-300 animate-bounce">
+        🤖
+    </div>
+    
+    <div class="absolute inset-0 w-16 h-16 bg-emerald-500 rounded-full animate-ping opacity-20"></div>
+    </div>
+</body>
+</html>
