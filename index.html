@@ -470,13 +470,10 @@ window.attemptLogin = function() {
 
 // 3. TẢI TÀI LIỆU (TAB TAILIEU)
 async function loadDataFromSheet() {
-    // Sử dụng link trực tiếp để tránh lỗi định dạng Publish
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Tailieu`;
     try {
         const res = await fetch(url);
         const data = await res.text();
-        
-        // Nếu trả về HTML tức là chưa Publish đúng định dạng Web Page
         if (data.includes("<!DOCTYPE")) return;
 
         const rows = data.split(/\r?\n/).filter(line => line.trim() !== "").slice(1);
@@ -500,7 +497,7 @@ async function generateQuizMenu() {
     const menuBox = document.getElementById('quizLibrary');
     if (!menuBox) return;
     
-    menuBox.innerHTML = '<div class="text-center p-10 text-emerald-900 font-bold animate-pulse text-[10px] uppercase">Đang tải danh sách đề...</div>';
+    menuBox.innerHTML = '<div class="text-center p-10 text-emerald-900 font-bold animate-pulse text-xs uppercase">Đang tải danh sách đề...</div>';
 
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=MenuQuiz`;
     try {
@@ -508,7 +505,7 @@ async function generateQuizMenu() {
         const data = await res.text();
         
         if (data.includes("<!DOCTYPE")) {
-            menuBox.innerHTML = '<div class="p-6 text-red-600 text-[10px] font-bold text-center uppercase">Vui lòng chọn định dạng "Web Page" trong phần Publish to the web của Google Sheets!</div>';
+            menuBox.innerHTML = '<div class="p-6 text-red-600 text-xs font-bold text-center uppercase">Vui lòng chọn định dạng "Web Page" trong phần Publish to the web của Google Sheets!</div>';
             return;
         }
 
@@ -518,23 +515,22 @@ async function generateQuizMenu() {
 
         rows.forEach((row, index) => {
             const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
-            // Bỏ qua dòng tiêu đề nếu có
             if (c[0] && c[1] && index >= 0 && !c[0].includes("Tên")) {
                 found = true;
                 html += `
-                <button onclick="startQuiz('${c[1].trim()}', '${c[0].trim()}')" class="w-full text-left p-5 mb-4 bg-white border-2 border-emerald-50 rounded-[1.5rem] hover:border-orange-400 hover:shadow-xl transition-all flex items-center gap-4 group shadow-sm">
+                <button onclick="startQuiz('${c[1].trim()}', '${c[0].trim()}')" class="w-full text-left p-5 mb-4 bg-white border-2 border-emerald-50 rounded-2xl hover:border-orange-400 hover:shadow-xl transition-all flex items-center gap-4 group shadow-sm active:scale-95">
                     <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl group-hover:bg-orange-600 group-hover:text-white transition-all">📝</div>
                     <div class="flex-1">
                         <div class="font-black text-emerald-900 text-sm mb-1 uppercase">${c[0]}</div>
-                        <div class="text-[9px] text-gray-400 font-bold uppercase italic">Bấm để bắt đầu thi ➜</div>
+                        <div class="text-[10px] text-gray-400 font-bold uppercase italic">Bấm để bắt đầu thi ➜</div>
                     </div>
                 </button>`;
             }
         });
 
-        menuBox.innerHTML = found ? html : '<div class="text-center p-10 text-gray-400 font-bold text-[10px]">CHƯA CÓ DỮ LIỆU ĐỀ THI</div>';
+        menuBox.innerHTML = found ? html : '<div class="text-center p-10 text-gray-400 font-bold text-xs">CHƯA CÓ DỮ LIỆU ĐỀ THI</div>';
     } catch (e) { 
-        menuBox.innerHTML = `<div class="p-4 text-red-600 text-[10px] text-center uppercase">Lỗi kết nối: ${e.message}</div>`;
+        menuBox.innerHTML = `<div class="p-4 text-red-600 text-xs text-center uppercase">Lỗi kết nối: ${e.message}</div>`;
     }
 }
 
@@ -545,7 +541,7 @@ window.startQuiz = async function(tabName, displayName) {
     
     quizLib.classList.add('hidden');
     quizArena.classList.remove('hidden');
-    quizArena.innerHTML = `<div class="text-center py-20 text-emerald-900 font-bold animate-pulse text-[10px] uppercase">Đang đồng bộ câu hỏi từ tab '${tabName}'...</div>`;
+    quizArena.innerHTML = `<div class="text-center py-20 text-emerald-900 font-bold animate-pulse text-xs uppercase">Đang đồng bộ câu hỏi từ tab '${tabName}'...</div>`;
     
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
     
@@ -555,20 +551,18 @@ window.startQuiz = async function(tabName, displayName) {
         const rows = data.split(/\r?\n/).filter(line => line.trim() !== "").slice(1);
         
         currentQuizQuestions = rows.map(row => {
-    const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
-    if (c.length >= 6) {
-        // Đọc trực tiếp giá trị 0, 1, 2, 3 từ Sheet
-        let correctIndex = parseInt(c[5]); 
-        return { 
-            q: c[0], 
-            options: [c[1], c[2], c[3], c[4]], 
-            // Không trừ 1 nữa để khớp với 0=A, 1=B, 2=C, 3=D
-            correct: isNaN(correctIndex) ? 0 : correctIndex, 
-            explain: c[6] || ""
-        };
-    }
-    return null;
-}).filter(i => i);
+            const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
+            if (c.length >= 6) {
+                let correctIndex = parseInt(c[5]); 
+                return { 
+                    q: c[0], 
+                    options: [c[1], c[2], c[3], c[4]], 
+                    correct: isNaN(correctIndex) ? 0 : correctIndex, 
+                    explain: c[6] || ""
+                };
+            }
+            return null;
+        }).filter(i => i);
         
         if (currentQuizQuestions.length === 0) throw new Error("Tab trống hoặc sai cấu trúc");
 
@@ -577,10 +571,9 @@ window.startQuiz = async function(tabName, displayName) {
         renderQuizQuestion(displayName);
     } catch (e) { 
         quizArena.innerHTML = `
-            <div class="p-10 text-center bg-white rounded-[2rem] shadow-xl">
-                <p class="text-red-500 font-bold text-[10px] mb-4 uppercase">LỖI: KHÔNG TÌM THẤY DỮ LIỆU TẠI TAB "${tabName}"</p>
-                <p class="text-gray-500 text-[9px] mb-6">Hãy kiểm tra lại tên Tab trong Google Sheets phải khớp chính xác tuyệt đối.</p>
-                <button onclick="handleToolbarClick('quiz')" class="bg-emerald-900 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase">QUAY LẠI</button>
+            <div class="p-10 text-center bg-white rounded-3xl shadow-xl">
+                <p class="text-red-500 font-bold text-xs mb-4 uppercase">LỖI: KHÔNG TÌM THẤY DỮ LIỆU TẠI TAB "${tabName}"</p>
+                <button onclick="handleToolbarClick('quiz')" class="bg-emerald-900 text-white px-8 py-3 rounded-xl text-xs font-black uppercase">QUAY LẠI</button>
             </div>`;
     }
 }
@@ -589,24 +582,24 @@ function renderQuizQuestion(displayName) {
     const q = currentQuizQuestions[currentQuestionIndex];
     const arena = document.getElementById('quizArena');
     arena.innerHTML = `
-        <div class="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-emerald-50 max-w-2xl mx-auto">
+        <div class="bg-white rounded-[2rem] p-6 shadow-2xl border border-emerald-50 max-w-2xl mx-auto mb-20">
             <div class="flex justify-between items-center mb-6">
-                <span class="text-[9px] bg-emerald-900 text-white px-3 py-1 rounded-full font-black uppercase">${displayName}</span>
-                <span class="text-[10px] font-bold text-gray-300 uppercase">Câu ${currentQuestionIndex + 1}/${currentQuizQuestions.length}</span>
+                <span class="text-[10px] bg-emerald-900 text-white px-3 py-1 rounded-full font-black uppercase">${displayName}</span>
+                <span class="text-xs font-bold text-gray-300 uppercase">Câu ${currentQuestionIndex + 1}/${currentQuizQuestions.length}</span>
             </div>
-            <h3 class="text-lg font-black text-emerald-900 mb-8 leading-tight">${q.q}</h3>
+            <h3 class="text-base font-black text-emerald-900 mb-6 leading-tight">${q.q}</h3>
             <div class="grid gap-3">
                 ${q.options.map((opt, i) => opt ? `
-                    <button onclick="checkAnswer(${i}, this)" class="quiz-opt-btn text-left p-4 rounded-2xl border-2 border-emerald-50 hover:border-orange-400 hover:bg-orange-50 transition-all text-sm font-bold flex items-start gap-3 group">
-                        <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex-shrink-0 flex items-center justify-center text-[10px] font-black group-hover:bg-orange-600 group-hover:text-white">${String.fromCharCode(65 + i)}</span>
-                        <div class="pt-0.5">${opt}</div>
+                    <button onclick="checkAnswer(${i}, this)" class="quiz-opt-btn text-left p-4 rounded-xl border-2 border-emerald-50 hover:border-orange-400 hover:bg-orange-50 transition-all text-sm font-bold flex items-start gap-3 group active:scale-95">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex-shrink-0 flex items-center justify-center text-xs font-black group-hover:bg-orange-600 group-hover:text-white">${String.fromCharCode(65 + i)}</span>
+                        <div class="pt-1">${opt}</div>
                     </button>
                 ` : '').join('')}
             </div>
-            <div id="quizFeedback" class="hidden mt-8 p-6 rounded-[2rem] bg-orange-50 border-2 border-orange-100">
-                <p id="feedbackText" class="font-black text-[10px] mb-3 uppercase"></p>
-                <div class="bg-white/60 p-4 rounded-xl text-[11px] text-gray-600 leading-relaxed mb-6 italic">${q.explain || 'Đáp án đã được hệ thống ghi nhận.'}</div>
-                <button onclick="nextQuizQuestion('${displayName}')" class="w-full py-4 bg-emerald-900 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg">Tiếp theo ➜</button>
+            <div id="quizFeedback" class="hidden mt-6 p-5 rounded-2xl bg-orange-50 border-2 border-orange-100">
+                <p id="feedbackText" class="font-black text-xs mb-2 uppercase"></p>
+                <div class="bg-white/60 p-3 rounded-xl text-xs text-gray-600 leading-relaxed mb-4 italic">${q.explain || 'Đáp án đã được hệ thống ghi nhận.'}</div>
+                <button onclick="nextQuizQuestion('${displayName}')" class="w-full py-4 bg-emerald-900 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95">Tiếp theo ➜</button>
             </div>
         </div>
     `;
@@ -618,7 +611,10 @@ window.checkAnswer = function(choice, el) {
     const feedbackText = document.getElementById('feedbackText');
     const btns = document.querySelectorAll('.quiz-opt-btn');
     
-    btns.forEach(b => b.onclick = null);
+    btns.forEach(b => {
+        b.onclick = null;
+        b.style.pointerEvents = 'none';
+    });
     feedback.classList.remove('hidden');
     
     if (choice === q.correct) {
@@ -628,25 +624,28 @@ window.checkAnswer = function(choice, el) {
     } else {
         el.classList.add('bg-red-500', 'text-white', 'border-red-500');
         if (btns[q.correct]) btns[q.correct].classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
-        feedbackText.innerHTML = '❌ Tiếc quá! Đáp án đúng là ' + String.fromCharCode(65 + q.correct);
+        feedbackText.innerHTML = '❌ Đáp án đúng là ' + String.fromCharCode(65 + q.correct);
     }
 };
 
 window.nextQuizQuestion = function(displayName) {
     currentQuestionIndex++;
-    if (currentQuestionIndex < currentQuizQuestions.length) renderQuizQuestion(displayName);
-    else showFinalScore();
+    if (currentQuestionIndex < currentQuizQuestions.length) {
+        renderQuizQuestion(displayName);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        showFinalScore();
+    }
 };
 
 function showFinalScore() {
     const arena = document.getElementById('quizArena');
     arena.innerHTML = `
-        <div class="text-center py-12 bg-white rounded-[4rem] shadow-2xl max-w-md mx-auto border-4 border-emerald-50">
-            <div class="text-5xl mb-4">🏆</div>
-            <h2 class="text-lg font-black text-emerald-900 uppercase">Chúc mừng bạn!</h2>
-            <p class="text-[10px] text-gray-400 font-bold uppercase mt-2">Bạn đã hoàn thành bài thi</p>
+        <div class="text-center py-12 bg-white rounded-[3rem] shadow-2xl max-w-md mx-auto border-4 border-emerald-50 mb-20">
+            <div class="text-6xl mb-4">🏆</div>
+            <h2 class="text-lg font-black text-emerald-900 uppercase">Hoàn thành!</h2>
             <div class="text-6xl font-black text-orange-600 my-8">${score}/${currentQuizQuestions.length}</div>
-            <button onclick="handleToolbarClick('quiz')" class="px-10 py-4 bg-emerald-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-transform">Xác nhận kết quả</button>
+            <button onclick="handleToolbarClick('quiz')" class="px-10 py-4 bg-emerald-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest active:scale-95 transition-transform">Xác nhận ➜</button>
         </div>
     `;
 }
@@ -667,6 +666,7 @@ window.handleToolbarClick = function(view) {
         document.getElementById('quizArena').classList.add('hidden');
         generateQuizMenu();
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 window.setActiveCategory = function(cat) {
@@ -690,12 +690,12 @@ function renderBooks() {
     const container = document.getElementById('bookGrid');
     if (!container) return;
     container.innerHTML = state.books.map(book => `
-        <div class="bg-white p-6 rounded-[2.5rem] border border-emerald-50 shadow-sm flex flex-col justify-between h-full hover:shadow-lg transition-all group">
+        <div class="bg-white p-5 rounded-[2rem] border border-emerald-50 shadow-sm flex flex-col justify-between h-full hover:shadow-lg transition-all group">
             <div>
-                <span class="text-[9px] font-black uppercase text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">${book.category}</span>
+                <span class="text-[10px] font-black uppercase text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">${book.category}</span>
                 <h3 class="font-black text-emerald-900 text-sm mt-4 mb-5 leading-tight group-hover:text-orange-600 transition-colors">${book.title}</h3>
             </div>
-            <a href="${book.link}" target="_blank" class="block text-center py-3 bg-emerald-50 text-emerald-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-900 hover:text-white transition-all">Xem chi tiết ➜</a>
+            <a href="${book.link}" target="_blank" class="block text-center py-3 bg-emerald-50 text-emerald-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-900 hover:text-white transition-all active:scale-95">Xem ngay ➜</a>
         </div>
     `).join('');
 }
@@ -703,9 +703,9 @@ function renderBooks() {
 function renderNavigation() {
     const nav = document.getElementById('categoryNav');
     if (!nav) return;
-    let html = `<button onclick="setActiveCategory('all')" class="w-full text-left px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest mb-2 transition-all ${state.currentCategory === 'all' ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📂 Tất cả tài liệu</button>`;
+    let html = `<button onclick="setActiveCategory('all')" class="w-full text-left px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest mb-2 transition-all active:scale-95 ${state.currentCategory === 'all' ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📂 Tất cả tài liệu</button>`;
     state.categories.forEach(cat => {
-        html += `<button onclick="setActiveCategory('${cat}')" class="w-full text-left px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest mb-2 transition-all ${state.currentCategory === cat ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📄 ${cat}</button>`;
+        html += `<button onclick="setActiveCategory('${cat}')" class="w-full text-left px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest mb-2 transition-all active:scale-95 ${state.currentCategory === cat ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📄 ${cat}</button>`;
     });
     nav.innerHTML = html;
 }
@@ -716,7 +716,6 @@ function setupEventListeners() {
         filterBooks();
     });
 }
-
     </script>
 
     <div id="chatBubble" 
@@ -736,3 +735,4 @@ function setupEventListeners() {
     </div>
 </body>
 </html>
+
