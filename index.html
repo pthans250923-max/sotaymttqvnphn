@@ -208,27 +208,17 @@
                         📁 Nghị quyết, Chỉ thị của Đảng
                     </a>
                     <a href="#" onclick="setActiveCategory('Pháp luật Nhà nước')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
-                        📁 Luật Biên giới quốc gia
+                        📁 Văn bản pháp luật 
                     </a>
-                    <a href="#" onclick="setActiveCategory('An ninh biên giới')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
-                        📁 Quy định về ANTT vùng biên
-                    </a>
-                </div>
+                    </div>
             </div>
 
             <div class="relative group">
-                <button class="toolbar-btn flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-sm font-bold">
-                    📍 VĂN BẢN ĐỊA PHƯƠNG <span class="text-[10px] opacity-70">▼</span>
-                </button>
-                <div class="dropdown-content absolute left-0 mt-0 w-80 bg-white rounded-b-xl shadow-2xl py-2 z-[60] border border-emerald-100 hidden group-hover:block animate-fade-in">
-                    <a href="#" onclick="setActiveCategory('Văn bản địa phương')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
-                        📁 Văn bản MTTQ Đồng Tháp
-                    </a>
-                    <a href="#" onclick="setActiveCategory('Văn bản địa phương')" class="block px-5 py-3 text-[14px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-gray-50 last:border-0 transition-colors">
-                        📁 Kế hoạch Phường Hồng Ngự
-                    </a>
-                </div>
-            </div>
+    <button onclick="setActiveCategory('Văn bản địa phương')" 
+            class="toolbar-btn flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-sm font-bold">
+        📍 VĂN BẢN ĐỊA PHƯƠNG
+    </button>
+</div>
 
             <button onclick="handleToolbarClick('chatbot')" class="toolbar-btn flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-sm font-bold">
                 🤖 TRỢ LÝ Chatbot
@@ -425,378 +415,307 @@
 
     <!-- JavaScript Section -->
     <script>
-    const APP_PASSWORD = "123456"; 
-    const STORAGE_KEY = 'biengioiso_v2_counter';
-    const BASE_COUNT = 5280; 
+    // 1. CẤU HÌNH
+const SHEET_ID = '1KSurgymEodbAYu70AHgNtxziVgbEeNSCqbJW_fyh4ag';
+const APP_PASSWORD = "123456";
+const STORAGE_KEY = 'biengioiso_v2_counter';
+const BASE_COUNT = 5302;
 
-    let libraryData = [ ];
-        
-   
+let libraryData = [];
+let currentQuizQuestions = [];
+let currentQuestionIndex = 0;
+let score = 0;
 
-    const state = {
-        currentCategory: "all",
-        searchQuery: "",
-        categories: [],
-        books: libraryData,
-        currentView: "home",
-        expandedMenus: {}
-    };
+const state = {
+    currentCategory: "all",
+    searchQuery: "",
+    categories: [],
+    books: [],
+    currentView: "home"
+};
 
-    function initVisitorCount() {
-        let count = localStorage.getItem(STORAGE_KEY);
-        if (!count) {
-            count = BASE_COUNT;
-            localStorage.setItem(STORAGE_KEY, count);
-        }
-        updateDisplay(count);
-    }
-
-    function incrementVisitorCount() {
-        let count = parseInt(localStorage.getItem(STORAGE_KEY)) || BASE_COUNT;
-        count++;
-        localStorage.setItem(STORAGE_KEY, count);
-        updateDisplay(count);
-    }
-
-    function updateDisplay(num) {
-        const el = document.getElementById('visitorCount');
-        if (el) el.innerText = parseInt(num).toLocaleString('vi-VN');
-    }
-
-    // Dòng 425
+// 2. KHỞI TẠO
 document.addEventListener('DOMContentLoaded', () => {
     initVisitorCount();
     setupEventListeners();
+    loadDataFromSheet();
+    generateQuizMenu();
     
-    // Gọi hàm tải dữ liệu từ Google Sheet
-    loadDataFromSheet(); 
-
-    // Kiểm tra trạng thái đăng nhập
     if (sessionStorage.getItem('biengioiso_auth') === 'true') {
         const overlay = document.getElementById('loginOverlay');
         if (overlay) overlay.style.display = 'none';
     }
-}); // Kết thúc DOMContentLoaded tại đây
+});
 
-    window.attemptLogin = function() {
-        const passInput = document.getElementById('passwordInput');
-        const errorMsg = document.getElementById('loginError');
-        const overlay = document.getElementById('loginOverlay');
+function initVisitorCount() {
+    let count = localStorage.getItem(STORAGE_KEY) || BASE_COUNT;
+    const el = document.getElementById('visitorCount');
+    if (el) el.innerText = parseInt(count).toLocaleString('vi-VN');
+}
 
-        if (passInput.value === APP_PASSWORD) {
-            sessionStorage.setItem('biengioiso_auth', 'true');
-            incrementVisitorCount();
+window.attemptLogin = function() {
+    const passInput = document.getElementById('passwordInput');
+    const overlay = document.getElementById('loginOverlay');
+    if (passInput && passInput.value === APP_PASSWORD) {
+        sessionStorage.setItem('biengioiso_auth', 'true');
+        if (overlay) {
             overlay.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => { overlay.style.display = 'none'; }, 500);
-        } else {
-            errorMsg.classList.remove('hidden');
-            passInput.classList.add('border-red-500');
-            setTimeout(() => passInput.classList.remove('border-red-500'), 1000);
         }
-    };
-
-    window.logout = function() {
-        sessionStorage.removeItem('biengioiso_auth');
-        location.reload();
-    };
-
-    window.handleLoginKey = function(e) { if (e.key === 'Enter') window.attemptLogin(); };
-
-    function extractCategories() {
-        const cats = new Set(libraryData.map(b => b.category));
-        state.categories = Array.from(cats);
-    }
-
-   // HÀM ĐIỀU HƯỚNG MỚI (ĐÃ GỘP TRẮC NGHIỆM)
-    window.handleToolbarClick = function(view) {
-    state.currentView = view;
-    
-    // Reset trạng thái các nút bấm trên Menu
-    document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
-
-    // XỬ LÝ CHATBOT
-    if (view === 'chatbot') {
-        const linkChatbot = "https://chatgpt.com/g/g-68ada4c182dc81918f133b37ed0226fb-mttqvn-va-cac-tcctxh-phuong-hong-ngu-ai";
-        window.open(linkChatbot, "_blank");
-        handleToolbarClick('home'); 
-        return; 
-    }
-
-    const homeView = document.getElementById('homeView');
-    const quizView = document.getElementById('quizView');
-    const sidebar = document.getElementById('sidebarPanel');
-    const mobileFilter = document.getElementById('mobileFilterPanel');
-
-    if (view === 'quiz') {
-        // HIỆN KHU VỰC THI
-        if (homeView) homeView.classList.add('hidden');
-        if (quizView) quizView.classList.remove('hidden');
-        if (sidebar) sidebar.classList.add('hidden');
-        if (mobileFilter) mobileFilter.classList.add('hidden');
-        showQuizLibrary();
     } else {
-        // QUAY VỀ TRANG CHỦ / CONTACT
-        if (quizView) quizView.classList.add('hidden');
-        if (homeView) homeView.classList.remove('hidden');
-        if (sidebar) sidebar.classList.remove('hidden');
-        if (mobileFilter) mobileFilter.classList.remove('hidden');
-
-        if (view === 'home') {
-            setActiveCategory('all');
-        } else if (view === 'contact') {
-            setActiveCategory('Thông tin liên hệ');
-        }
-        
-        // CỰC KỲ QUAN TRỌNG: Vẽ lại tài liệu nếu lỡ bị mất
-        if (libraryData.length > 0) {
-            extractCategories();
-            renderNavigation();
-            renderBooks();
-        }
+        const errorMsg = document.getElementById('loginError');
+        if (errorMsg) errorMsg.classList.remove('hidden');
     }
 };
 
-    window.renderNavigation = function() {
-        const nav = document.getElementById('categoryNav');
-        const mobileSelect = document.getElementById('mobileCatSelect');
-        if(!nav || !mobileSelect) return;
-
-        nav.innerHTML = '';
-        mobileSelect.innerHTML = '<option value="all">Tất cả mục lục Sổ tay MTTQVN</option>';
-
-        const allBtn = createNavButton("Tất cả tài liệu", "all", state.currentCategory === "all", "📂");
-        nav.appendChild(allBtn);
-
-        state.categories.forEach(cat => {
-            nav.appendChild(createNavButton(cat, cat, state.currentCategory === cat));
-            const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat;
-            mobileSelect.appendChild(opt);
-        });
-    };
-
-    function createNavButton(label, value, isActive, icon = "📄") {
-        const btn = document.createElement('button');
-        btn.className = `w-full text-left px-5 py-4 rounded-2xl text-[12px] font-bold transition-all mb-1.5 flex items-center gap-3 ${isActive ? 'bg-emerald-900 text-white shadow-xl translate-x-1' : 'text-emerald-800 hover:bg-emerald-50'}`;
-        btn.innerHTML = `<span>${icon}</span> <span>${label}</span>`;
-        btn.onclick = () => { setActiveCategory(value); };
-        return btn;
-    }
-
-    window.setActiveCategory = function(cat) {
-        state.currentCategory = cat;
-        if(document.getElementById('mobileCatSelect')) document.getElementById('mobileCatSelect').value = cat;
-        document.getElementById('currentCategoryTitle').textContent = cat === "all" ? "Tất cả tài liệu Sổ tay MTTQVN" : cat;
+// 3. TẢI TÀI LIỆU (TAB TAILIEU)
+async function loadDataFromSheet() {
+    // Sử dụng link trực tiếp để tránh lỗi định dạng Publish
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Tailieu`;
+    try {
+        const res = await fetch(url);
+        const data = await res.text();
         
-        const dash = document.getElementById('dashboardSection');
-        if(dash) {
-            if(cat === 'all' && state.searchQuery === '') dash.classList.remove('hidden');
-            else dash.classList.add('hidden');
-        }
-        filterBooks();
+        // Nếu trả về HTML tức là chưa Publish đúng định dạng Web Page
+        if (data.includes("<!DOCTYPE")) return;
+
+        const rows = data.split(/\r?\n/).filter(line => line.trim() !== "").slice(1);
+        libraryData = rows.map(row => {
+            const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
+            if (c.length >= 4 && c[2]) {
+                return { id: c[0], category: c[1], title: c[2], link: c[3] };
+            }
+            return null;
+        }).filter(i => i);
+        
+        state.books = libraryData;
+        state.categories = Array.from(new Set(libraryData.map(b => b.category)));
         renderNavigation();
-    };
-
-    window.filterBooks = function() {
-        let filtered = libraryData;
-        if (state.currentCategory !== "all") filtered = filtered.filter(b => b.category === state.currentCategory);
-        if (state.searchQuery) {
-            const q = state.searchQuery.toLowerCase();
-            filtered = filtered.filter(b => b.title.toLowerCase().includes(q));
-        }
-        state.books = filtered;
         renderBooks();
-    };
+    } catch (e) { console.error("Lỗi Tailieu:", e); }
+}
 
-    function renderBooks() {
-        const container = document.getElementById('bookGrid');
-        const noResults = document.getElementById('noResults');
-        const countLabel = document.getElementById('resultCount');
+// 4. HIỂN THỊ MENU ĐỀ THI (TAB MENUQUIZ)
+async function generateQuizMenu() {
+    const menuBox = document.getElementById('quizLibrary');
+    if (!menuBox) return;
+    
+    menuBox.innerHTML = '<div class="text-center p-10 text-emerald-900 font-bold animate-pulse text-[10px] uppercase">Đang tải danh sách đề...</div>';
+
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=MenuQuiz`;
+    try {
+        const res = await fetch(url);
+        const data = await res.text();
         
-        container.innerHTML = '';
-        countLabel.textContent = `${state.books.length} NỘI DUNG Sổ tay MTTQVN TÌM THẤY`;
-        
-        if (state.books.length === 0) {
-            container.classList.add('hidden'); noResults.classList.remove('hidden'); return;
+        if (data.includes("<!DOCTYPE")) {
+            menuBox.innerHTML = '<div class="p-6 text-red-600 text-[10px] font-bold text-center uppercase">Vui lòng chọn định dạng "Web Page" trong phần Publish to the web của Google Sheets!</div>';
+            return;
         }
-        container.classList.remove('hidden'); noResults.classList.add('hidden');
-        state.books.forEach(book => container.appendChild(createCard(book)));
-    }
 
-    function createCard(book) {
-        const card = document.createElement('div');
-        card.className = 'book-card bg-white p-8 rounded-[2rem] border border-emerald-50 shadow-sm flex flex-col justify-between h-full';
-        
-        let icon = "📄";
-        if (book.category.includes("Đảng")) icon = "📕";
-        if (book.category.includes("Nhà nước")) icon = "⚖️";
-        if (book.category.includes("An ninh")) icon = "🛡️";
-        if (book.category.includes("Phát triển")) icon = "🌾";
-        if (book.category.includes("liên hệ")) icon = "📞"; 
-        
-        card.innerHTML = `
-            <div>
-                <div class="flex justify-between items-center mb-6">
-                    <span class="text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">${book.category}</span>
-                    <span class="text-3xl">${icon}</span>
-                </div>
-                <h3 class="font-bold text-emerald-900 text-lg mb-4 leading-tight hover:text-emerald-600 transition-colors">
-                    <a href="${book.link}" target="_blank">${book.title}</a>
-                </h3>
-                <div class="h-1 w-10 bg-emerald-200 mb-6 rounded-full"></div>
-            </div>
-            <a href="${book.link}" target="_blank" class="block w-full text-center py-4 bg-emerald-50 text-emerald-900 rounded-2xl hover:bg-emerald-900 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em]">
-                Sổ tay MTTQVN Access ➜
-            </a>
-        `;
-        return card;
-    }
+        const rows = data.split(/\r?\n/).filter(line => line.trim() !== "");
+        let html = '';
+        let found = false;
 
-    function setupEventListeners() {
-        document.getElementById('searchInput')?.addEventListener('input', (e) => {
-            state.searchQuery = e.target.value;
-            filterBooks();
+        rows.forEach((row, index) => {
+            const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
+            // Bỏ qua dòng tiêu đề nếu có
+            if (c[0] && c[1] && index >= 0 && !c[0].includes("Tên")) {
+                found = true;
+                html += `
+                <button onclick="startQuiz('${c[1].trim()}', '${c[0].trim()}')" class="w-full text-left p-5 mb-4 bg-white border-2 border-emerald-50 rounded-[1.5rem] hover:border-orange-400 hover:shadow-xl transition-all flex items-center gap-4 group shadow-sm">
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl group-hover:bg-orange-600 group-hover:text-white transition-all">📝</div>
+                    <div class="flex-1">
+                        <div class="font-black text-emerald-900 text-sm mb-1 uppercase">${c[0]}</div>
+                        <div class="text-[9px] text-gray-400 font-bold uppercase italic">Bấm để bắt đầu thi ➜</div>
+                    </div>
+                </button>`;
+            }
         });
-        document.getElementById('mobileCatSelect')?.addEventListener('change', (e) => setActiveCategory(e.target.value));
+
+        menuBox.innerHTML = found ? html : '<div class="text-center p-10 text-gray-400 font-bold text-[10px]">CHƯA CÓ DỮ LIỆU ĐỀ THI</div>';
+    } catch (e) { 
+        menuBox.innerHTML = `<div class="p-4 text-red-600 text-[10px] text-center uppercase">Lỗi kết nối: ${e.message}</div>`;
     }
-    async function loadDataFromSheet() {
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRjqxM_vT3aoIQwgoBTq89zp45dtQcoGX1i2lDDzk510f1vziLUj-XPiYU28lEKyWBc9zdiwYNqw9Y_/pub?gid=0&single=true&output=csv'; 
+}
+
+// 5. BẮT ĐẦU THI
+window.startQuiz = async function(tabName, displayName) {
+    const quizLib = document.getElementById('quizLibrary');
+    const quizArena = document.getElementById('quizArena');
+    
+    quizLib.classList.add('hidden');
+    quizArena.classList.remove('hidden');
+    quizArena.innerHTML = `<div class="text-center py-20 text-emerald-900 font-bold animate-pulse text-[10px] uppercase">Đang đồng bộ câu hỏi từ tab '${tabName}'...</div>`;
+    
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+    
+    try {
+        const res = await fetch(url);
+        const data = await res.text();
+        const rows = data.split(/\r?\n/).filter(line => line.trim() !== "").slice(1);
         
-        try {
-            const response = await fetch(SHEET_CSV_URL);
-            const csvText = await response.text();
-            const rows = csvText.split('\n').slice(1); 
-            
-            libraryData = rows.map((row, index) => {
-                const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (columns.length >= 4) {
-                    return {
-                        id: columns[0].trim(),
-                        category: columns[1].trim().replace(/^"|"$/g, ''),
-                        title: columns[2].trim().replace(/^"|"$/g, ''),
-                        link: columns[3].trim().replace(/^"|"$/g, '')
-                    };
-                }
-            }).filter(item => item !== undefined);
-
-            // CHỈ CẦN CỤM NÀY LÀ ĐỦ:
-            state.books = libraryData;
-            extractCategories(); 
-            renderNavigation();  
-            renderBooks();       
-            
-        } catch (error) {
-            console.error("Lỗi tải dữ liệu:", error);
-        }
+        currentQuizQuestions = rows.map(row => {
+    const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
+    if (c.length >= 6) {
+        // Đọc trực tiếp giá trị 0, 1, 2, 3 từ Sheet
+        let correctIndex = parseInt(c[5]); 
+        return { 
+            q: c[0], 
+            options: [c[1], c[2], c[3], c[4]], 
+            // Không trừ 1 nữa để khớp với 0=A, 1=B, 2=C, 3=D
+            correct: isNaN(correctIndex) ? 0 : correctIndex, 
+            explain: c[6] || ""
+        };
     }
-    // --- BỘ MÁY XỬ LÝ TRẮC NGHIỆM ---
-    const quizConfig = {
-        'LUAT_BIEN_GIOI': {
-            title: "Tìm hiểu Luật Biên giới Quốc gia",
-            // Dán link CSV của Sheet 2 vào đây
-            url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjqxM_vT3aoIQwgoBTq89zp45dtQcoGX1i2lDDzk510f1vziLUj-XPiYU28lEKyWBc9zdiwYNqw9Y_/pub?gid=1021741259&single=true&output=csv"
-        }
-    };
+    return null;
+}).filter(i => i);
+        
+        if (currentQuizQuestions.length === 0) throw new Error("Tab trống hoặc sai cấu trúc");
 
-    let currentQuestions = [];
-    let currentIndex = 0;
-    let score = 0;
+        currentQuestionIndex = 0;
+        score = 0;
+        renderQuizQuestion(displayName);
+    } catch (e) { 
+        quizArena.innerHTML = `
+            <div class="p-10 text-center bg-white rounded-[2rem] shadow-xl">
+                <p class="text-red-500 font-bold text-[10px] mb-4 uppercase">LỖI: KHÔNG TÌM THẤY DỮ LIỆU TẠI TAB "${tabName}"</p>
+                <p class="text-gray-500 text-[9px] mb-6">Hãy kiểm tra lại tên Tab trong Google Sheets phải khớp chính xác tuyệt đối.</p>
+                <button onclick="handleToolbarClick('quiz')" class="bg-emerald-900 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase">QUAY LẠI</button>
+            </div>`;
+    }
+}
 
-    function showQuizLibrary() {
+function renderQuizQuestion(displayName) {
+    const q = currentQuizQuestions[currentQuestionIndex];
+    const arena = document.getElementById('quizArena');
+    arena.innerHTML = `
+        <div class="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-emerald-50 max-w-2xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-[9px] bg-emerald-900 text-white px-3 py-1 rounded-full font-black uppercase">${displayName}</span>
+                <span class="text-[10px] font-bold text-gray-300 uppercase">Câu ${currentQuestionIndex + 1}/${currentQuizQuestions.length}</span>
+            </div>
+            <h3 class="text-lg font-black text-emerald-900 mb-8 leading-tight">${q.q}</h3>
+            <div class="grid gap-3">
+                ${q.options.map((opt, i) => opt ? `
+                    <button onclick="checkAnswer(${i}, this)" class="quiz-opt-btn text-left p-4 rounded-2xl border-2 border-emerald-50 hover:border-orange-400 hover:bg-orange-50 transition-all text-sm font-bold flex items-start gap-3 group">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex-shrink-0 flex items-center justify-center text-[10px] font-black group-hover:bg-orange-600 group-hover:text-white">${String.fromCharCode(65 + i)}</span>
+                        <div class="pt-0.5">${opt}</div>
+                    </button>
+                ` : '').join('')}
+            </div>
+            <div id="quizFeedback" class="hidden mt-8 p-6 rounded-[2rem] bg-orange-50 border-2 border-orange-100">
+                <p id="feedbackText" class="font-black text-[10px] mb-3 uppercase"></p>
+                <div class="bg-white/60 p-4 rounded-xl text-[11px] text-gray-600 leading-relaxed mb-6 italic">${q.explain || 'Đáp án đã được hệ thống ghi nhận.'}</div>
+                <button onclick="nextQuizQuestion('${displayName}')" class="w-full py-4 bg-emerald-900 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg">Tiếp theo ➜</button>
+            </div>
+        </div>
+    `;
+}
+
+window.checkAnswer = function(choice, el) {
+    const q = currentQuizQuestions[currentQuestionIndex];
+    const feedback = document.getElementById('quizFeedback');
+    const feedbackText = document.getElementById('feedbackText');
+    const btns = document.querySelectorAll('.quiz-opt-btn');
+    
+    btns.forEach(b => b.onclick = null);
+    feedback.classList.remove('hidden');
+    
+    if (choice === q.correct) {
+        el.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
+        feedbackText.innerHTML = '✨ Rất chính xác!';
+        score++;
+    } else {
+        el.classList.add('bg-red-500', 'text-white', 'border-red-500');
+        if (btns[q.correct]) btns[q.correct].classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
+        feedbackText.innerHTML = '❌ Tiếc quá! Đáp án đúng là ' + String.fromCharCode(65 + q.correct);
+    }
+};
+
+window.nextQuizQuestion = function(displayName) {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < currentQuizQuestions.length) renderQuizQuestion(displayName);
+    else showFinalScore();
+};
+
+function showFinalScore() {
+    const arena = document.getElementById('quizArena');
+    arena.innerHTML = `
+        <div class="text-center py-12 bg-white rounded-[4rem] shadow-2xl max-w-md mx-auto border-4 border-emerald-50">
+            <div class="text-5xl mb-4">🏆</div>
+            <h2 class="text-lg font-black text-emerald-900 uppercase">Chúc mừng bạn!</h2>
+            <p class="text-[10px] text-gray-400 font-bold uppercase mt-2">Bạn đã hoàn thành bài thi</p>
+            <div class="text-6xl font-black text-orange-600 my-8">${score}/${currentQuizQuestions.length}</div>
+            <button onclick="handleToolbarClick('quiz')" class="px-10 py-4 bg-emerald-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-transform">Xác nhận kết quả</button>
+        </div>
+    `;
+}
+
+// 6. ĐIỀU HƯỚNG UI
+window.handleToolbarClick = function(view) {
+    state.currentView = view;
+    if (view === 'chatbot') { 
+        window.open("https://chatgpt.com/g/g-68ada4c182dc81918f133b37ed0226fb-mttqvn-va-cac-tcctxh-phuong-hong-ngu-ai", "_blank"); 
+        return; 
+    }
+    
+    document.getElementById('homeView').classList.toggle('hidden', view === 'quiz');
+    document.getElementById('quizView').classList.toggle('hidden', view !== 'quiz');
+    
+    if (view === 'quiz') {
         document.getElementById('quizLibrary').classList.remove('hidden');
         document.getElementById('quizArena').classList.add('hidden');
+        generateQuizMenu();
     }
+};
 
-    async function loadQuiz(id) {
-        const config = quizConfig[id];
-        if(!config) return;
+window.setActiveCategory = function(cat) {
+    state.currentCategory = cat;
+    renderNavigation();
+    filterBooks();
+};
 
-        document.getElementById('quizLibrary').classList.add('hidden');
-        document.getElementById('quizArena').classList.remove('hidden');
-        document.getElementById('currentQuizTitle').innerText = config.title;
-        
-        const box = document.getElementById('questionBox');
-        box.innerHTML = '<div class="text-center py-10"><p>🔄 Đang tải câu hỏi trắc nghiệm...</p></div>';
-
-        try {
-            const response = await fetch(config.url);
-            const data = await response.text();
-            const rows = data.split('\n').slice(1);
-            
-            // Dùng biến cục bộ quizQuestions thay vì chạm vào biến chung
-            const quizQuestions = rows.filter(row => row.trim() !== '').map(row => {
-                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
-                return {
-                    q: cols[0]?.replace(/"/g, ""),
-                    options: [cols[1], cols[2], cols[3], cols[4]],
-                    correct: parseInt(cols[5]),
-                    explain: cols[6] ? cols[6].replace(/"/g, "") : "Không có giải thích."
-                };
-            });
-            
-            // Gán lại cho biến toàn cầu dùng riêng cho Quiz
-            currentQuestions = quizQuestions;
-            currentIndex = 0; 
-            score = 0;
-            showQuestion();
-        } catch (e) {
-            console.error("Lỗi Quiz:", e);
-            box.innerHTML = '<p class="text-red-500">❌ Lỗi kết nối đề thi. Cậu kiểm tra link Sheet 2 nhé!</p>';
-        }
+function filterBooks() {
+    let filtered = libraryData;
+    if (state.currentCategory !== "all") filtered = filtered.filter(b => b.category === state.currentCategory);
+    if (state.searchQuery) {
+        const q = state.searchQuery.toLowerCase();
+        filtered = filtered.filter(b => b.title.toLowerCase().includes(q));
     }
+    state.books = filtered;
+    renderBooks();
+}
 
-    function showQuestion() {
-        const data = currentQuestions[currentIndex];
-        const box = document.getElementById('questionBox');
-        box.innerHTML = `
-            <div class="mb-6 animate-fade-in">
-                <p class="text-[10px] font-black text-emerald-600 uppercase mb-2">Câu hỏi ${currentIndex + 1}/${currentQuestions.length}</p>
-                <h3 class="text-xl font-bold text-emerald-900 leading-tight">${data.q}</h3>
+function renderBooks() {
+    const container = document.getElementById('bookGrid');
+    if (!container) return;
+    container.innerHTML = state.books.map(book => `
+        <div class="bg-white p-6 rounded-[2.5rem] border border-emerald-50 shadow-sm flex flex-col justify-between h-full hover:shadow-lg transition-all group">
+            <div>
+                <span class="text-[9px] font-black uppercase text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">${book.category}</span>
+                <h3 class="font-black text-emerald-900 text-sm mt-4 mb-5 leading-tight group-hover:text-orange-600 transition-colors">${book.title}</h3>
             </div>
-            <div id="optionsGroup" class="grid gap-3">
-                ${data.options.map((opt, i) => `
-                    <button onclick="handleAnswer(${i+1})" class="opt-btn w-full text-left p-4 rounded-2xl border-2 border-emerald-50 hover:border-emerald-500 transition-all text-sm font-medium">
-                        ${opt}
-                    </button>
-                `).join('')}
-            </div>
-            <div id="explainBox" class="hidden mt-6 p-5 bg-amber-50 rounded-[2rem] border border-amber-100">
-                <p class="text-sm text-amber-900 italic"><strong>💡 Giải thích:</strong> ${data.explain}</p>
-                <button onclick="nextQuestion()" class="mt-4 w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold uppercase text-xs">Câu tiếp theo ➜</button>
-            </div>
-        `;
-    }
+            <a href="${book.link}" target="_blank" class="block text-center py-3 bg-emerald-50 text-emerald-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-900 hover:text-white transition-all">Xem chi tiết ➜</a>
+        </div>
+    `).join('');
+}
 
-    window.handleAnswer = function(choice) {
-        const data = currentQuestions[currentIndex];
-        const btns = document.querySelectorAll('.opt-btn');
-        btns.forEach(b => b.disabled = true);
-        
-        if (choice === data.correct) {
-            score++;
-            btns[choice-1].classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
-        } else {
-            btns[choice-1].classList.add('bg-red-500', 'text-white', 'border-red-500');
-            btns[data.correct-1].classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
-        }
-        document.getElementById('explainBox').classList.remove('hidden');
-    }
+function renderNavigation() {
+    const nav = document.getElementById('categoryNav');
+    if (!nav) return;
+    let html = `<button onclick="setActiveCategory('all')" class="w-full text-left px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest mb-2 transition-all ${state.currentCategory === 'all' ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📂 Tất cả tài liệu</button>`;
+    state.categories.forEach(cat => {
+        html += `<button onclick="setActiveCategory('${cat}')" class="w-full text-left px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest mb-2 transition-all ${state.currentCategory === cat ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📄 ${cat}</button>`;
+    });
+    nav.innerHTML = html;
+}
 
-    window.nextQuestion = function() {
-        currentIndex++;
-        if (currentIndex < currentQuestions.length) showQuestion();
-        else showFinalResult();
-    }
-
-    function showFinalResult() {
-        const box = document.getElementById('questionBox');
-        box.innerHTML = `
-            <div class="text-center py-10">
-                <h2 class="text-3xl font-black text-emerald-900 uppercase">Hoàn thành!</h2>
-                <p class="text-lg mt-2">Đúng: <b>${score}/${currentQuestions.length}</b></p>
-                <button onclick="handleToolbarClick('quiz')" class="mt-8 px-10 py-4 bg-emerald-900 text-white rounded-2xl font-bold uppercase text-xs">Quay lại</button>
-            </div>
-        `;
-    }
+function setupEventListeners() {
+    document.getElementById('searchInput')?.addEventListener('input', (e) => {
+        state.searchQuery = e.target.value;
+        filterBooks();
+    });
+}
 
     </script>
 
