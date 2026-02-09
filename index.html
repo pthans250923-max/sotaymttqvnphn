@@ -118,12 +118,16 @@
             font-weight: 900;
         }
 
-        .no-scrollbar::-webkit-scrollbar {
+       .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        /* Đảm bảo nội dung không bị vỡ trên mobile */
+        #mainToolbar {
+            -webkit-overflow-scrolling: touch;
+        }
+        .toolbar-btn.active {
+            background-color: #064e3b !important;
+            color: white !important;
         }
     </style>
 </head>
@@ -199,40 +203,42 @@
     </header>
 
     <!-- Navigation Bar -->
-    <nav class="bg-emerald-800 text-white sticky top-0 z-50 shadow-lg shrink-0">
+    <nav class="bg-white border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
         <div class="container mx-auto">
-            <!-- Thanh trượt ngang chính -->
-            <div id="mainToolbar" class="flex flex-nowrap overflow-x-auto no-scrollbar py-2 px-4 gap-2 items-center">
+            <!-- Container chính với các thuộc tính cuộn ngang -->
+            <div id="mainToolbar" class="flex flex-nowrap overflow-x-auto no-scrollbar py-3 px-4 gap-2 items-center" style="scrollbar-width: none; -ms-overflow-style: none;">
                 
-                <button onclick="handleToolbarClick('home')" class="toolbar-btn active flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl transition-all whitespace-nowrap text-[12px] font-bold uppercase tracking-tight bg-emerald-700">
+                <!-- Nút Trang chủ -->
+                <button onclick="handleToolbarClick('home', this)" class="toolbar-btn active flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight bg-slate-100 text-emerald-900">
                     🏠 TRANG CHỦ
                 </button>
 
-                <!-- Mục có danh mục con (Chủ trương) -->
+                <!-- Mục có danh mục con (Sử dụng flex-shrink-0 để không bị co lại) -->
                 <div class="relative group flex-shrink-0">
-                    <button class="flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-[12px] font-bold uppercase tracking-tight">
-                        📜 CHỦ TRƯƠNG - PHÁP LUẬT <span class="text-[8px] opacity-70">▼</span>
+                    <button class="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+                        📜 CHỦ TRƯƠNG <span class="text-[10px] opacity-50">▼</span>
                     </button>
-                    <!-- Dropdown vẫn hoạt động khi click/hover -->
-                    <div class="hidden group-hover:block absolute left-0 mt-0 w-64 bg-white text-gray-800 rounded-b-xl shadow-2xl py-2 z-[60] border border-emerald-100">
-                        <a href="#" onclick="setActiveCategory('Chủ trương của Đảng')" class="block px-5 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold transition-colors">📁 Nghị quyết, Chỉ thị của Đảng</a>
-                        <a href="#" onclick="setActiveCategory('Pháp luật Nhà nước')" class="block px-5 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold transition-colors">📁 Văn bản pháp luật</a>
+                    <!-- Dropdown vẫn hiển thị bình thường -->
+                    <div class="hidden group-hover:block absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-xl shadow-2xl py-2 z-[60] border border-emerald-100">
+                        <a href="#" onclick="setActiveCategory('Chủ trương của Đảng')" class="block px-4 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold border-b border-slate-50">📁 Nghị quyết Đảng</a>
+                        <a href="#" onclick="setActiveCategory('Pháp luật Nhà nước')" class="block px-4 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold">📁 Văn bản pháp luật</a>
                     </div>
                 </div>
 
-                <button onclick="setActiveCategory('Văn bản địa phương')" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-[12px] font-bold uppercase tracking-tight">
-                    📍 VĂN BẢN ĐỊA PHƯƠNG
+                <!-- Các nút mục lục khác -->
+                <button onclick="setActiveCategory('Văn bản địa phương', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+                    📍 ĐỊA PHƯƠNG
                 </button>
 
-                <button onclick="handleToolbarClick('chatbot')" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-[12px] font-bold uppercase tracking-tight">
-                    🤖 TRỢ LÝ CHATBOT
+                <button onclick="handleToolbarClick('chatbot', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+                    🤖 CHATBOT AI
                 </button>
 
-                <button onclick="handleToolbarClick('quiz')" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-[12px] font-bold uppercase tracking-tight">
+                <button onclick="handleToolbarClick('quiz', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
                     🎮 TRẮC NGHIỆM
                 </button>
 
-                <button onclick="handleToolbarClick('contact')" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap text-[12px] font-bold uppercase tracking-tight">
+                <button onclick="handleToolbarClick('contact', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
                     📞 LIÊN HỆ
                 </button>
 
@@ -740,5 +746,6 @@ function setupEventListeners() {
     </div>
 </body>
 </html>
+
 
 
