@@ -129,6 +129,20 @@
             background-color: #064e3b !important;
             color: white !important;
         }
+
+        #mainToolbar {
+            overflow-x: auto;
+            overflow-y: visible !important; /* Không cắt nội dung theo chiều dọc */
+            display: flex;
+            flex-wrap: nowrap;
+        }
+
+        /* Đảm bảo dropdown luôn nổi lên trên cùng */
+        .group-hover\:block {
+            position: absolute !important;
+            top: 100%;
+            left: 0;
+        }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
@@ -215,15 +229,16 @@
 
                 <!-- Mục có danh mục con (Sử dụng flex-shrink-0 để không bị co lại) -->
                 <div class="relative group flex-shrink-0">
-                    <button class="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
-                        📜 CHỦ TRƯƠNG <span class="text-[10px] opacity-50">▼</span>
-                    </button>
-                    <!-- Dropdown vẫn hiển thị bình thường -->
-                    <div class="hidden group-hover:block absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-xl shadow-2xl py-2 z-[60] border border-emerald-100">
-                        <a href="#" onclick="setActiveCategory('Chủ trương của Đảng')" class="block px-4 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold border-b border-slate-50">📁 Nghị quyết Đảng</a>
-                        <a href="#" onclick="setActiveCategory('Pháp luật Nhà nước')" class="block px-4 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold">📁 Văn bản pháp luật</a>
-                    </div>
-                </div>
+        <button class="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+            📜 CHỦ TRƯƠNG <span class="text-[10px] opacity-50">▼</span>
+        </button>
+        
+        <!-- Dropdown Menu: Đảm bảo không bị ẩn khi trượt ngang -->
+        <div class="hidden group-hover:block absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-xl shadow-2xl py-2 z-[100] border border-emerald-100">
+            <a href="#" onclick="setActiveCategory('Chủ trương của Đảng')" class="block px-4 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold border-b border-slate-50">📁 Nghị quyết Đảng</a>
+            <a href="#" onclick="setActiveCategory('Pháp luật Nhà nước')" class="block px-4 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold">📁 Văn bản pháp luật</a>
+        </div>
+    </div>
 
                 <!-- Các nút mục lục khác -->
                 <button onclick="setActiveCategory('Văn bản địa phương', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
@@ -746,6 +761,7 @@ function setupEventListeners() {
     </div>
 </body>
 </html>
+
 
 
 
