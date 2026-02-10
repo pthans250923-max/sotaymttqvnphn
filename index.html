@@ -68,20 +68,7 @@
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Dropdown Styles */
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: white;
-            min-width: 280px;
-            box-shadow: 0px 10px 25px rgba(0,0,0,0.1);
-            z-index: 100;
-            border-radius: 0.75rem;
-            border: 1px solid #d1fae5;
-            overflow: hidden;
-        }
+        
         .dropdown:hover > .dropdown-content {
             display: block;
             animation: fadeIn 0.2s ease-out;
@@ -137,11 +124,20 @@
             flex-wrap: nowrap;
         }
 
-        /* Đảm bảo dropdown luôn nổi lên trên cùng */
-        .group-hover\:block {
-            position: absolute !important;
-            top: 100%;
-            left: 0;
+        
+
+        #mobileCategorySelect {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23064e3b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.5em;
+        }
+
+        /* Ẩn thanh cuộn và đảm bảo trượt ngang mượt */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        #mainToolbar {
+            -webkit-overflow-scrolling: touch;
+            overflow-x: auto;
         }
     </style>
 </head>
@@ -221,44 +217,42 @@
         <div class="container mx-auto">
             <!-- Container chính với các thuộc tính cuộn ngang -->
             <div id="mainToolbar" class="flex flex-nowrap overflow-x-auto no-scrollbar py-3 px-4 gap-2 items-center" style="scrollbar-width: none; -ms-overflow-style: none;">
-                
-                <!-- Nút Trang chủ -->
-                <button onclick="handleToolbarClick('home', this)" class="toolbar-btn active flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight bg-slate-100 text-emerald-900">
-                    🏠 TRANG CHỦ
-                </button>
-
-                <!-- Mục có danh mục con (Sử dụng flex-shrink-0 để không bị co lại) -->
-                <div class="relative group flex-shrink-0">
-        <button class="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
-            📜 CHỦ TRƯƠNG <span class="text-[10px] opacity-50">▼</span>
-        </button>
         
-        <!-- Dropdown Menu: Đảm bảo không bị ẩn khi trượt ngang -->
-        <div class="hidden group-hover:block absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-xl shadow-2xl py-2 z-[100] border border-emerald-100">
-            <a href="#" onclick="setActiveCategory('Chủ trương của Đảng')" class="block px-4 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold border-b border-slate-50">📁 Nghị quyết Đảng</a>
-            <a href="#" onclick="setActiveCategory('Pháp luật Nhà nước')" class="block px-4 py-3 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-bold">📁 Văn bản pháp luật</a>
-        </div>
+        <!-- Trang chủ -->
+        <button onclick="handleToolbarClick('home', this)" class="toolbar-btn active flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight bg-slate-100 text-emerald-900">
+            🏠 TRANG CHỦ
+        </button>
+
+        <!-- Chủ trương (Đã xóa mục con) -->
+        <button onclick="setActiveCategory('Chủ trương của Đảng', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+            📜 CHỦ TRƯƠNG
+        </button>
+
+        <!-- Pháp luật (Mục mới bổ sung) -->
+        <button onclick="setActiveCategory('Pháp luật Nhà nước', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+             ⚖️PHÁP LUẬT
+        </button>
+
+        <!-- Địa phương -->
+        <button onclick="setActiveCategory('Văn bản địa phương', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+            📍 ĐỊA PHƯƠNG
+        </button>
+
+        <!-- Chatbot AI -->
+        <button onclick="handleToolbarClick('chatbot', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+            🤖 CHATBOT AI
+        </button>
+
+        <!-- Trắc nghiệm -->
+        <button onclick="handleToolbarClick('quiz', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+            🎮 TRẮC NGHIỆM
+        </button>
+
+        <button onclick="setActiveCategory('Thông tin liên hệ', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
+            📞 LIÊN HỆ
+        </button>
     </div>
-
-                <!-- Các nút mục lục khác -->
-                <button onclick="setActiveCategory('Văn bản địa phương', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
-                    📍 ĐỊA PHƯƠNG
-                </button>
-
-                <button onclick="handleToolbarClick('chatbot', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
-                    🤖 CHATBOT AI
-                </button>
-
-                <button onclick="handleToolbarClick('quiz', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
-                    🎮 TRẮC NGHIỆM
-                </button>
-
-                <button onclick="handleToolbarClick('contact', this)" class="toolbar-btn flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-emerald-50 text-emerald-900 transition-all whitespace-nowrap text-[13px] font-bold uppercase tracking-tight">
-                    📞 LIÊN HỆ
-                </button>
-
-            </div>
-        </div>
+     </div>
     </nav>
 
     <div class="flex flex-1 overflow-hidden">
@@ -285,11 +279,12 @@
         <main class="flex-1 flex flex-col overflow-y-auto bg-[#f8faf8] relative scroll-smooth w-full" id="mainContent">
             
             <!-- Mobile Filter -->
-            <div id="mobileFilterPanel" class="md:hidden p-4 bg-white border-b border-emerald-50 sticky top-0 z-20 shrink-0 shadow-sm">
-                <select id="mobileCatSelect" class="block w-full px-4 py-3 text-sm border-emerald-100 focus:ring-emerald-500 focus:border-emerald-500 rounded-xl border bg-emerald-50/30 font-medium">
-                    <option value="all">Tất cả mục lục</option>
-                </select>
-            </div>
+            <div class="px-4 mb-6">
+        <select id="mobileCategorySelect" onchange="setActiveCategory(this.value)" class="w-full p-4 rounded-2xl border-2 border-emerald-100 text-emerald-900 font-bold text-sm bg-white shadow-sm focus:border-orange-400 outline-none appearance-none cursor-pointer">
+            <option value="all">📂 Tất cả mục lục</option>
+            <!-- Các danh mục khác sẽ được Javascript tự động thêm vào đây -->
+        </select>
+    </div>
 
             <!-- Content Container -->
             <div id="dynamicContent" class="flex-1 flex flex-col">
@@ -727,14 +722,22 @@ function renderBooks() {
 }
 
 function renderNavigation() {
-    const nav = document.getElementById('categoryNav');
-    if (!nav) return;
-    let html = `<button onclick="setActiveCategory('all')" class="w-full text-left px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest mb-2 transition-all active:scale-95 ${state.currentCategory === 'all' ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📂 Tất cả tài liệu</button>`;
-    state.categories.forEach(cat => {
-        html += `<button onclick="setActiveCategory('${cat}')" class="w-full text-left px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest mb-2 transition-all active:scale-95 ${state.currentCategory === cat ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📄 ${cat}</button>`;
-    });
-    nav.innerHTML = html;
-}
+            const nav = document.getElementById('categoryNav');
+            const select = document.getElementById('mobileCategorySelect');
+            
+            if (!nav || !select) return;
+
+            let navHtml = `<button onclick="setActiveCategory('all')" class="w-full text-left px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest mb-2 transition-all active:scale-95 ${state.currentCategory === 'all' ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📂 Tất cả tài liệu</button>`;
+            let selectHtml = `<option value="all" ${state.currentCategory === 'all' ? 'selected' : ''}>📂 Tất cả mục lục</option>`;
+
+            state.categories.forEach(cat => {
+                navHtml += `<button onclick="setActiveCategory('${cat}')" class="w-full text-left px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest mb-2 transition-all active:scale-95 ${state.currentCategory === cat ? 'bg-emerald-900 text-white shadow-lg' : 'text-emerald-800 hover:bg-emerald-50'}">📄 ${cat}</button>`;
+                selectHtml += `<option value="${cat}" ${state.currentCategory === cat ? 'selected' : ''}>📄 ${cat}</option>`;
+            });
+
+            nav.innerHTML = navHtml;
+            select.innerHTML = selectHtml;
+        }
 
 function setupEventListeners() {
     document.getElementById('searchInput')?.addEventListener('input', (e) => {
@@ -761,7 +764,6 @@ function setupEventListeners() {
     </div>
 </body>
 </html>
-
 
 
 
